@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "LiftUp",
+    "slug": "liftup",
+    "version": "1.0.0",
+    "privacy": "public",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F7F7F8"
+    },
+    "android": {
+      "package": "com.liftup.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.liftup.app"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "LiftUp necesita acceso a tus fotos para publicar y actualizar tu perfil."
+        }
+      ],
+      "expo-asset",
+      "expo-font",
+      "expo-video"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0dbda775-0585-46c4-8e58-6c716b9e5b27"
+      }
+    },
+    "owner": "fangos",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0dbda775-0585-46c4-8e58-6c716b9e5b27"
+    }
+  }
+}
