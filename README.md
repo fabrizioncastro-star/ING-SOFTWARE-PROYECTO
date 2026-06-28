@@ -2,6 +2,11 @@
 
 Red social fitness para gimnasios. Backend en Hostinger + APK instalable generado con EAS Build.
 
+## Entorno de producción
+
+- **Backend (API):** https://indigo-pigeon-660133.hostingersite.com
+- **Frontend (Expo Go):** publicado vía EAS Update en la cuenta `fangos` (rama `preview`)
+
 ## Estructura
 
 ```
