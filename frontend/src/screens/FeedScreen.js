@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, RefreshControl, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import client, { apiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -45,7 +46,7 @@ export default function FeedScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={['top']} style={styles.container}>
       <View style={styles.topBar}>
         <Logo />
       </View>
@@ -74,7 +75,7 @@ export default function FeedScreen({ navigation }) {
           <Text style={styles.emptyText}>No hay publicaciones aún</Text>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

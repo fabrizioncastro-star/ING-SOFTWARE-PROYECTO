@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import client, { apiError } from '../api/client';
 import { colors, spacing } from '../theme';
@@ -29,7 +30,7 @@ export default function AdminScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={['top']} style={styles.container}>
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{stats?.totalUsuarios ?? '—'}</Text>
@@ -57,7 +58,7 @@ export default function AdminScreen() {
           </View>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
