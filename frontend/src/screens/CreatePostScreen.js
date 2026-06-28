@@ -38,8 +38,13 @@ function buildFilePart(asset) {
 
 export default function CreatePostScreen({ navigation }) {
   const [asset, setAsset] = useState(null);
+  const [ejercicio, setEjercicio] = useState('');
+  const [pesoKg, setPesoKg] = useState('');
+  const [series, setSeries] = useState('');
+  const [reps, setReps] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const pickMedia = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -56,6 +61,16 @@ export default function CreatePostScreen({ navigation }) {
     setAsset(selected);
   };
 
+  const resetForm = () => {
+    setAsset(null);
+    setEjercicio('');
+    setPesoKg('');
+    setSeries('');
+    setReps('');
+    setDescripcion('');
+    setProgress(0);
+  };
+
   const handlePublish = async () => {
     if (!asset) {
       Alert.alert('Falta archivo', 'Selecciona una foto o video para publicar.');
@@ -65,15 +80,22 @@ export default function CreatePostScreen({ navigation }) {
     const formData = new FormData();
     formData.append('archivo', buildFilePart(asset));
     formData.append('descripcion', descripcion);
+    if (ejercicio.trim()) formData.append('ejercicio', ejercicio.trim());
+    if (pesoKg) formData.append('peso_kg', pesoKg);
+    if (series) formData.append('series', series);
+    if (reps) formData.append('repeticiones', reps);
 
     setLoading(true);
+    setProgress(0);
     try {
       // Requisito: máx. 10s para publicar
       await client.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (event) => {
+          if (event.total) setProgress(Math.round((event.loaded / event.total) * 100));
+        },
       });
-      setAsset(null);
-      setDescripcion('');
+      resetForm();
       navigation.navigate('Feed');
     } catch (err) {
       Alert.alert('Error al publicar', apiError(err));
@@ -108,15 +130,69 @@ export default function CreatePostScreen({ navigation }) {
                 <Ionicons name="add" size={22} color="#FFFFFF" />
               </View>
               <Text style={styles.placeholderText}>Agregar foto o video</Text>
-              <Text style={styles.formats}>JPG, PNG o MP4</Text>
+              <Text style={styles.formats}>JPG, PNG o MP4 · Máx 50MB</Text>
             </View>
           )}
         </TouchableOpacity>
 
-        <Text style={styles.label}>Descripción</Text>
+        {loading && (
+          <View style={styles.progressWrap}>
+            <Text style={styles.progressLabel}>Subiendo... {progress}%</Text>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${progress}%` }]} />
+            </View>
+          </View>
+        )}
+
+        <Text style={styles.label}>Ejercicio</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej. Press de banca"
+          placeholderTextColor={colors.textMuted}
+          value={ejercicio}
+          onChangeText={setEjercicio}
+        />
+
+        <View style={styles.row}>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Peso (kg)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="—"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="numeric"
+              value={pesoKg}
+              onChangeText={setPesoKg}
+            />
+          </View>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Series</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="—"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="numeric"
+              value={series}
+              onChangeText={setSeries}
+            />
+          </View>
+          <View style={styles.rowItem}>
+            <Text style={styles.label}>Reps</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="—"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="numeric"
+              value={reps}
+              onChangeText={setReps}
+            />
+          </View>
+        </View>
+
+        <Text style={styles.label}>Descripción y hashtags</Text>
         <TextInput
           style={[styles.input, styles.descInput]}
-          placeholder="¿Cómo fue tu entrenamiento?"
+          placeholder="¿Cómo fue tu entrenamiento? #liftup"
           placeholderTextColor={colors.textMuted}
           multiline
           value={descripcion}
@@ -177,6 +253,24 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: spacing.sm,
   },
+  progressWrap: {
+    marginBottom: spacing.md,
+  },
+  progressLabel: {
+    color: colors.textMuted,
+    fontSize: 12,
+    marginBottom: spacing.xs,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+  },
   label: {
     color: colors.textMuted,
     fontSize: 11,
@@ -196,6 +290,13 @@ const styles = StyleSheet.create({
   descInput: {
     minHeight: 90,
     textAlignVertical: 'top',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  rowItem: {
+    flex: 1,
   },
   button: {
     backgroundColor: colors.primary,
