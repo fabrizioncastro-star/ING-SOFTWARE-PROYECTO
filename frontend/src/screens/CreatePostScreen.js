@@ -109,7 +109,7 @@ export default function CreatePostScreen({ navigation }) {
       let maxTotal = 0;
       await client.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 300000, // 5 minutos máximo — red de seguridad para videos grandes
+        timeout: 120000, // 2 minutos máximo para subida de archivos
         onUploadProgress: (event) => {
           if (event.total) maxTotal = Math.max(maxTotal, event.total);
           if (maxTotal > 0) {
