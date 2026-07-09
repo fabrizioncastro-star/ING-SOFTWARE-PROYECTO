@@ -66,7 +66,6 @@ export default function CreatePostScreen({ navigation }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 0.7,
-      videoQuality: 0.5, // comprime el video en iOS antes de subir (como Instagram)
     });
     if (result.canceled) return;
     setAsset(result.assets[0]);
