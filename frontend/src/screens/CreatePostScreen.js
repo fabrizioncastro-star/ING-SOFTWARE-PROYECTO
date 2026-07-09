@@ -153,7 +153,7 @@ export default function CreatePostScreen({ navigation }) {
                 <Ionicons name="add" size={22} color="#FFFFFF" />
               </View>
               <Text style={styles.placeholderText}>Agregar foto o video</Text>
-              <Text style={styles.formats}>Foto o video · Máx 60 seg</Text>
+              <Text style={styles.formats}>Foto o video</Text>
             </View>
           )}
         </TouchableOpacity>
