@@ -112,11 +112,10 @@ export default function CreatePostScreen({ navigation }) {
       let maxTotal = 0;
       await client.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120000, // 2 minutos máximo para subida de archivos
+        timeout: 300000, // 5 minutos — cubre subidas lentas en datos móviles
         onUploadProgress: (event) => {
           if (event.total) maxTotal = Math.max(maxTotal, event.total);
           if (maxTotal > 0) {
-            // Cap en 95: el 95→100 lo hacemos cuando el servidor confirma
             const pct = Math.min(95, Math.round((event.loaded / maxTotal) * 100));
             setProgress((prev) => Math.max(prev, pct));
           }

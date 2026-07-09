@@ -15,7 +15,8 @@ async function create({ usuarioId, descripcion, archivoUrl, tipoArchivo, ejercic
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [usuarioId, descripcion || null, archivoUrl, tipoArchivo, ejercicio || null, pesoKg || null, series || null, repeticiones || null, ancho || null, alto || null]
   );
-  return findById(result.insertId, usuarioId);
+  // Devolvemos solo el ID para responder rápido — el feed carga el post fresco al navegar.
+  return { id: result.insertId };
 }
 
 async function findById(id, viewerId = null) {
