@@ -22,10 +22,23 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
 
+// Log de peticiones con archivos para diagnosticar uploads
+app.use((req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT') {
+    const ct = req.headers['content-type'] || '';
+    const cl = req.headers['content-length'] || '?';
+    if (ct.includes('multipart')) {
+      console.log(`[upload] ${req.method} ${req.path} — Content-Length: ${cl}B`);
+    }
+  }
+  next();
+});
+
 // Timeout de 2 minutos por petición — evita que el servidor se quede colgado
 // indefinidamente si la DB o el procesamiento de archivos tarda demasiado.
 app.use((req, res, next) => {
   res.setTimeout(120000, () => {
+    console.error(`[timeout] ${req.method} ${req.path} colgado >120s`);
     if (!res.headersSent) {
       res.status(503).json({ error: 'El servidor tardó demasiado. Intenta de nuevo.' });
     }

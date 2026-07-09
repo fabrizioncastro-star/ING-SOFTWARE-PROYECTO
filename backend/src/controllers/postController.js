@@ -16,12 +16,14 @@ function parseNumber(value) {
 
 // CUS-003: Crear publicación (foto o video + descripción + datos de entrenamiento opcionales)
 async function createPost(req, res, next) {
+  console.log('[createPost] inicio — req.file recibido:', req.file ? `${req.file.mimetype} ${req.file.size}B` : 'ninguno');
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Debes adjuntar una foto (JPG/PNG) o un video (MP4)' });
     }
 
     const { descripcion, ejercicio, peso_kg, series, repeticiones, ancho, alto } = req.body;
+    console.log('[createPost] guardando en DB...');
 
     const post = await postModel.create({
       usuarioId: req.user.id,
@@ -36,8 +38,10 @@ async function createPost(req, res, next) {
       alto: parseNumber(alto),
     });
 
+    console.log('[createPost] OK — publicacion id:', post.id);
     res.status(201).json({ publicacion: post });
   } catch (err) {
+    console.error('[createPost] ERROR:', err.message);
     next(err);
   }
 }

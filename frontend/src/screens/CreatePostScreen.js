@@ -65,8 +65,11 @@ export default function CreatePostScreen({ navigation }) {
   const pickMedia = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true, // iOS: recortador para fotos y selector de duración para videos
+      allowsEditing: true,
       quality: 0.7,
+      // Comprime el video a 720p H.264 en iOS antes de devolverlo.
+      // Sin esto un video de 3 s de iPhone puede pesar 20-40 MB y el servidor rechaza la subida.
+      videoExportPreset: ImagePicker.VideoExportPreset.H264_1280x720,
     });
     if (result.canceled) return;
     setAsset(result.assets[0]);
