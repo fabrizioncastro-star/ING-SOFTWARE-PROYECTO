@@ -64,7 +64,6 @@ export default function CreatePostScreen({ navigation }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 0.8,
-      videoMaxDuration: 60, // límite de 60 segundos como Instagram
     });
     if (result.canceled) return;
     setAsset(result.assets[0]);
