@@ -10,6 +10,8 @@ import {
   FlatList,
   ScrollView,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,7 +95,10 @@ export default function EditProfileScreen({ navigation }) {
   const nivelLabel = NIVELES.find((n) => n.value === nivel)?.label || 'Sin experiencia';
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScreenHeader
         title="Editar perfil"
         actionLabel="Guardar"
@@ -101,7 +106,7 @@ export default function EditProfileScreen({ navigation }) {
         actionLoading={loading}
       />
 
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled">
         <TouchableOpacity style={styles.photoPicker} onPress={pickPhoto}>
           {newPhoto ? (
             <Image source={{ uri: newPhoto.uri }} style={styles.avatarPreview} />
@@ -175,7 +180,7 @@ export default function EditProfileScreen({ navigation }) {
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

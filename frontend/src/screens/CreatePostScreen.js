@@ -8,6 +8,8 @@ import {
   Alert,
   Image,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -121,7 +123,10 @@ export default function CreatePostScreen({ navigation }) {
     : null;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScreenHeader
         title="Nueva sesión"
         actionLabel="Publicar"
@@ -129,7 +134,7 @@ export default function CreatePostScreen({ navigation }) {
         actionLoading={loading}
       />
 
-      <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled">
         <TouchableOpacity
           style={[
             styles.mediaPicker,
@@ -232,7 +237,7 @@ export default function CreatePostScreen({ navigation }) {
           <Text style={styles.buttonText}>Publicar sesión</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Alert,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import client, { apiError, mediaUrl } from '../api/client';
 import ScreenHeader from '../components/ScreenHeader';
@@ -35,7 +45,10 @@ export default function EditPostScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScreenHeader
         title="Editar publicación"
         actionLabel="Guardar"
@@ -43,7 +56,7 @@ export default function EditPostScreen({ route, navigation }) {
         actionLoading={loading}
       />
 
-      <View style={{ padding: spacing.lg }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.lg }} keyboardShouldPersistTaps="handled">
         {post.tipo_archivo === 'video' ? (
           <View style={[styles.media, styles.videoBox]}>
             <Ionicons name="videocam" size={48} color={colors.primary} />
@@ -102,8 +115,8 @@ export default function EditPostScreen({ route, navigation }) {
           value={descripcion}
           onChangeText={setDescripcion}
         />
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

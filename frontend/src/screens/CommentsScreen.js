@@ -77,7 +77,7 @@ export default function CommentsScreen({ route }) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScreenHeader title="Comentarios" />
 
