@@ -65,7 +65,8 @@ export default function CreatePostScreen({ navigation }) {
   const pickMedia = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      quality: 0.8,
+      quality: 0.7,
+      videoQuality: 0.5, // comprime el video en iOS antes de subir (como Instagram)
     });
     if (result.canceled) return;
     setAsset(result.assets[0]);
@@ -104,6 +105,7 @@ export default function CreatePostScreen({ navigation }) {
     try {
       await client.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 0, // sin timeout para subida de archivos (puede tardar si el video es grande)
         onUploadProgress: (event) => {
           if (event.total) setProgress(Math.round((event.loaded / event.total) * 100));
         },
