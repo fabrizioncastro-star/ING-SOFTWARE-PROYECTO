@@ -102,13 +102,23 @@ export default function CreatePostScreen({ navigation }) {
     setLoading(true);
     setProgress(0);
     try {
+      // maxTotal: evita que el progreso retroceda cuando React Native dispara
+      // múltiples eventos de onUploadProgress con totales distintos (comportamiento
+      // normal en multipart/form-data con archivos grandes).
+      let maxTotal = 0;
       await client.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 0, // sin timeout para subida de archivos (puede tardar si el video es grande)
+        timeout: 300000, // 5 minutos máximo — red de seguridad para videos grandes
         onUploadProgress: (event) => {
-          if (event.total) setProgress(Math.round((event.loaded / event.total) * 100));
+          if (event.total) maxTotal = Math.max(maxTotal, event.total);
+          if (maxTotal > 0) {
+            // Cap en 95: el 95→100 lo hacemos cuando el servidor confirma
+            const pct = Math.min(95, Math.round((event.loaded / maxTotal) * 100));
+            setProgress((prev) => Math.max(prev, pct));
+          }
         },
       });
+      setProgress(100);
       resetForm();
       navigation.navigate('Feed');
     } catch (err) {
@@ -172,7 +182,9 @@ export default function CreatePostScreen({ navigation }) {
 
         {loading && (
           <View style={styles.progressWrap}>
-            <Text style={styles.progressLabel}>Subiendo... {progress}%</Text>
+            <Text style={styles.progressLabel}>
+              {progress >= 95 ? 'Procesando en servidor...' : `Subiendo... ${progress}%`}
+            </Text>
             <View style={styles.progressTrack}>
               <View style={[styles.progressFill, { width: `${progress}%` }]} />
             </View>
