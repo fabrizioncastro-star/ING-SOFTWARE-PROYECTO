@@ -65,6 +65,7 @@ export default function CreatePostScreen({ navigation }) {
   const pickMedia = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true, // iOS: recortador para fotos y selector de duración para videos
       quality: 0.7,
     });
     if (result.canceled) return;
