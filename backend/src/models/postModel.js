@@ -8,12 +8,12 @@ const SELECT_BASE = `
   JOIN usuarios u ON u.id = p.usuario_id
 `;
 
-async function create({ usuarioId, descripcion, archivoUrl, tipoArchivo, ejercicio, pesoKg, series, repeticiones }) {
+async function create({ usuarioId, descripcion, archivoUrl, tipoArchivo, ejercicio, pesoKg, series, repeticiones, ancho, alto }) {
   const [result] = await pool.query(
     `INSERT INTO publicaciones
-      (usuario_id, descripcion, archivo_url, tipo_archivo, ejercicio, peso_kg, series, repeticiones)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [usuarioId, descripcion || null, archivoUrl, tipoArchivo, ejercicio || null, pesoKg || null, series || null, repeticiones || null]
+      (usuario_id, descripcion, archivo_url, tipo_archivo, ejercicio, peso_kg, series, repeticiones, ancho, alto)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [usuarioId, descripcion || null, archivoUrl, tipoArchivo, ejercicio || null, pesoKg || null, series || null, repeticiones || null, ancho || null, alto || null]
   );
   return findById(result.insertId, usuarioId);
 }

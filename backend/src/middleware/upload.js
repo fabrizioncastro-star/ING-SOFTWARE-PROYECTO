@@ -5,7 +5,8 @@ const crypto = require('crypto');
 const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png'];
-const VIDEO_TYPES = ['video/mp4'];
+// video/quicktime = .mov grabado por iPhone
+const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/mov'];
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
@@ -19,6 +20,7 @@ function guessExt(mimetype) {
   if (mimetype === 'image/jpeg') return '.jpg';
   if (mimetype === 'image/png') return '.png';
   if (mimetype === 'video/mp4') return '.mp4';
+  if (mimetype === 'video/quicktime' || mimetype === 'video/mov') return '.mov';
   return '';
 }
 
@@ -32,13 +34,13 @@ const uploadImage = multer({
   },
 });
 
-// Imágenes o video MP4 (publicaciones - CU-003)
+// Imágenes o video (publicaciones - CU-003)
 const uploadMedia = multer({
   storage,
   limits: { fileSize: 100 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if ([...IMAGE_TYPES, ...VIDEO_TYPES].includes(file.mimetype)) return cb(null, true);
-    cb(new Error('FORMATO_INVALIDO: solo JPG, PNG o MP4'));
+    cb(new Error('FORMATO_INVALIDO: solo JPG, PNG, MP4 o MOV'));
   },
 });
 

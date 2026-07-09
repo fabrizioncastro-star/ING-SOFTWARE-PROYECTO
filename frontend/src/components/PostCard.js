@@ -11,7 +11,7 @@ function PostVideo({ uri, style }) {
     player.loop = false;
   });
 
-  return <VideoView style={style} player={player} allowsFullscreen nativeControls />;
+  return <VideoView style={style} player={player} allowsFullscreen nativeControls contentFit="contain" />;
 }
 
 export default function PostCard({ post, currentUserId, onEdit, onDelete, onOpenComments }) {
@@ -19,6 +19,13 @@ export default function PostCard({ post, currentUserId, onEdit, onDelete, onOpen
   const [liked, setLiked] = useState(!!post.le_gusta);
   const [likeCount, setLikeCount] = useState(post.total_reacciones || 0);
   const [reacting, setReacting] = useState(false);
+
+  // Relación de aspecto real del archivo guardado en DB.
+  // Si la publicación es anterior y no tiene dimensiones, fallback a 1:1 (cuadrado).
+  // Se limita entre 4:5 (portrait) y 1.91:1 (landscape) — igual que Instagram.
+  const mediaAspectRatio = (post.ancho && post.alto)
+    ? Math.min(1.91, Math.max(0.8, post.ancho / post.alto))
+    : 1;
 
   const confirmDelete = () => {
     Alert.alert('Eliminar publicación', '¿Seguro que deseas eliminar esta publicación?', [
@@ -81,9 +88,16 @@ export default function PostCard({ post, currentUserId, onEdit, onDelete, onOpen
       )}
 
       {post.tipo_archivo === 'video' ? (
-        <PostVideo uri={mediaUrl(post.archivo_url)} style={styles.media} />
+        <PostVideo
+          uri={mediaUrl(post.archivo_url)}
+          style={[styles.media, { aspectRatio: mediaAspectRatio }]}
+        />
       ) : (
-        <Image source={{ uri: mediaUrl(post.archivo_url) }} style={styles.media} />
+        <Image
+          source={{ uri: mediaUrl(post.archivo_url) }}
+          style={[styles.media, { aspectRatio: mediaAspectRatio }]}
+          resizeMode="cover"
+        />
       )}
 
       {!!post.descripcion && <Text style={styles.description}>{post.descripcion}</Text>}
@@ -149,8 +163,7 @@ const styles = StyleSheet.create({
   },
   media: {
     width: '100%',
-    height: 320,
-    backgroundColor: colors.input,
+    backgroundColor: '#000',
   },
   description: {
     color: colors.text,

@@ -10,30 +10,44 @@ import {
   ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import client, { apiError } from '../api/client';
 import ScreenHeader from '../components/ScreenHeader';
 import { colors, spacing, radius } from '../theme';
 
-// Tipos permitidos según CU-003: JPG, PNG, MP4
+// Preview mudo del video seleccionado (muestra el primer fotograma)
+function VideoPreview({ uri, style }) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.muted = true;
+    p.loop = false;
+  });
+  return <VideoView style={style} player={player} nativeControls={false} contentFit="contain" />;
+}
+
+// Construye el objeto de archivo para FormData
+// Acepta: JPG, PNG (fotos) y MP4, MOV (videos iPhone y Android)
 function buildFilePart(asset) {
   const uri = asset.uri;
   const isVideo = asset.type === 'video';
-  const ext = uri.split('.').pop().toLowerCase();
+  // mimeType lo provee expo-image-picker; si no, deducir por extensión
+  const mime = asset.mimeType || '';
+  const ext = uri.split('.').pop().toLowerCase().split('?')[0];
 
-  let mime;
   if (isVideo) {
-    if (ext !== 'mp4') return null;
-    mime = 'video/mp4';
-  } else if (ext === 'jpg' || ext === 'jpeg') {
-    mime = 'image/jpeg';
-  } else if (ext === 'png') {
-    mime = 'image/png';
+    if (mime === 'video/mp4' || ext === 'mp4')
+      return { uri, name: 'video.mp4', type: 'video/mp4' };
+    // iPhone graba .mov (QuickTime) — caso más frecuente en iOS
+    if (mime === 'video/quicktime' || ext === 'mov' || mime === 'video/mov')
+      return { uri, name: 'video.mov', type: 'video/quicktime' };
+    // Fallback para cualquier otro video del dispositivo
+    return { uri, name: 'video.mov', type: 'video/quicktime' };
   } else {
-    return null;
+    if (ext === 'png' || mime === 'image/png')
+      return { uri, name: 'foto.png', type: 'image/png' };
+    // HEIC/HEIF de iPhone lo convierte automáticamente expo-image-picker a JPEG
+    return { uri, name: 'foto.jpg', type: 'image/jpeg' };
   }
-
-  return { uri, name: `archivo.${ext}`, type: mime };
 }
 
 export default function CreatePostScreen({ navigation }) {
@@ -50,15 +64,10 @@ export default function CreatePostScreen({ navigation }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 0.8,
+      videoMaxDuration: 60, // límite de 60 segundos como Instagram
     });
     if (result.canceled) return;
-
-    const selected = result.assets[0];
-    if (!buildFilePart(selected)) {
-      Alert.alert('Formato no permitido', 'Solo se aceptan archivos JPG, PNG o MP4.');
-      return;
-    }
-    setAsset(selected);
+    setAsset(result.assets[0]);
   };
 
   const resetForm = () => {
@@ -77,9 +86,13 @@ export default function CreatePostScreen({ navigation }) {
       return;
     }
 
+    const filePart = buildFilePart(asset);
     const formData = new FormData();
-    formData.append('archivo', buildFilePart(asset));
+    formData.append('archivo', filePart);
     formData.append('descripcion', descripcion);
+    // Dimensiones para mostrar el contenido en la proporción correcta en el feed
+    if (asset.width) formData.append('ancho', String(asset.width));
+    if (asset.height) formData.append('alto', String(asset.height));
     if (ejercicio.trim()) formData.append('ejercicio', ejercicio.trim());
     if (pesoKg) formData.append('peso_kg', pesoKg);
     if (series) formData.append('series', series);
@@ -88,7 +101,6 @@ export default function CreatePostScreen({ navigation }) {
     setLoading(true);
     setProgress(0);
     try {
-      // Requisito: máx. 10s para publicar
       await client.post('/posts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (event) => {
@@ -104,6 +116,11 @@ export default function CreatePostScreen({ navigation }) {
     }
   };
 
+  // Relación de aspecto del archivo seleccionado (igual que Instagram: entre 4:5 y 1.91:1)
+  const previewAspectRatio = asset
+    ? Math.min(1.91, Math.max(0.8, (asset.width || 1) / (asset.height || 1)))
+    : null;
+
   return (
     <View style={styles.container}>
       <ScreenHeader
@@ -114,15 +131,21 @@ export default function CreatePostScreen({ navigation }) {
       />
 
       <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
-        <TouchableOpacity style={styles.mediaPicker} onPress={pickMedia} disabled={loading}>
+        <TouchableOpacity
+          style={[
+            styles.mediaPicker,
+            previewAspectRatio
+              ? { aspectRatio: previewAspectRatio, height: undefined }
+              : { height: 220 },
+          ]}
+          onPress={pickMedia}
+          disabled={loading}
+        >
           {asset ? (
             asset.type === 'video' ? (
-              <View style={styles.videoSelected}>
-                <Ionicons name="videocam" size={48} color={colors.primary} />
-                <Text style={styles.videoText}>Video seleccionado</Text>
-              </View>
+              <VideoPreview uri={asset.uri} style={styles.mediaFill} />
             ) : (
-              <Image source={{ uri: asset.uri }} style={styles.preview} />
+              <Image source={{ uri: asset.uri }} style={styles.mediaFill} resizeMode="cover" />
             )
           ) : (
             <View style={styles.placeholder}>
@@ -130,10 +153,17 @@ export default function CreatePostScreen({ navigation }) {
                 <Ionicons name="add" size={22} color="#FFFFFF" />
               </View>
               <Text style={styles.placeholderText}>Agregar foto o video</Text>
-              <Text style={styles.formats}>JPG, PNG o MP4 · Máx 50MB</Text>
+              <Text style={styles.formats}>Foto o video · Máx 60 seg</Text>
             </View>
           )}
         </TouchableOpacity>
+
+        {asset && (
+          <TouchableOpacity style={styles.changeMedia} onPress={pickMedia} disabled={loading}>
+            <Ionicons name="swap-horizontal" size={14} color={colors.textMuted} />
+            <Text style={styles.changeMediaText}>Cambiar archivo</Text>
+          </TouchableOpacity>
+        )}
 
         {loading && (
           <View style={styles.progressWrap}>
@@ -215,13 +245,12 @@ const styles = StyleSheet.create({
   mediaPicker: {
     backgroundColor: colors.input,
     borderRadius: radius.lg,
-    height: 220,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
   },
-  preview: {
+  mediaFill: {
     width: '100%',
     height: '100%',
   },
@@ -246,12 +275,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: spacing.xs,
   },
-  videoSelected: {
+  changeMedia: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
   },
-  videoText: {
-    color: colors.text,
-    marginTop: spacing.sm,
+  changeMediaText: {
+    color: colors.textMuted,
+    fontSize: 12,
   },
   progressWrap: {
     marginBottom: spacing.md,

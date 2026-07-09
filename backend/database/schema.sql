@@ -34,6 +34,9 @@ CREATE TABLE IF NOT EXISTS publicaciones (
   descripcion TEXT DEFAULT NULL,
   archivo_url VARCHAR(500) NOT NULL,
   tipo_archivo ENUM('imagen', 'video') NOT NULL DEFAULT 'imagen',
+  -- Dimensiones del archivo para mostrar la proporción correcta en el feed
+  ancho INT DEFAULT NULL,
+  alto INT DEFAULT NULL,
   -- Campos opcionales de registro de entrenamiento (pantalla "Publicar sesión")
   ejercicio VARCHAR(150) DEFAULT NULL,
   peso_kg DECIMAL(6,2) DEFAULT NULL,

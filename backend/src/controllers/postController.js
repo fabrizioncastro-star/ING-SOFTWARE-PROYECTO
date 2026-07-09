@@ -5,7 +5,7 @@ const postModel = require('../models/postModel');
 const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
 
 function tipoArchivo(mimetype) {
-  return mimetype === 'video/mp4' ? 'video' : 'imagen';
+  return mimetype.startsWith('video/') ? 'video' : 'imagen';
 }
 
 function parseNumber(value) {
@@ -21,7 +21,7 @@ async function createPost(req, res, next) {
       return res.status(400).json({ error: 'Debes adjuntar una foto (JPG/PNG) o un video (MP4)' });
     }
 
-    const { descripcion, ejercicio, peso_kg, series, repeticiones } = req.body;
+    const { descripcion, ejercicio, peso_kg, series, repeticiones, ancho, alto } = req.body;
 
     const post = await postModel.create({
       usuarioId: req.user.id,
@@ -32,6 +32,8 @@ async function createPost(req, res, next) {
       pesoKg: parseNumber(peso_kg),
       series: parseNumber(series),
       repeticiones: parseNumber(repeticiones),
+      ancho: parseNumber(ancho),
+      alto: parseNumber(alto),
     });
 
     res.status(201).json({ publicacion: post });
